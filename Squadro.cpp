@@ -67,21 +67,24 @@ void Squadro::play(int id) {
     Cell* cell = m_board[row][col];
     Q_ASSERT(cell != nullptr);
 
+    int power = cell->getPower();
+
     if (cell->player() == m_player && !cell->isCompleted()) {
         if (m_player->type() == Player::Red){
-            bool flag = true;
-            int range = (col+cell->getPower());
+            int range = (col+power);
 
             if (!cell->isInverted()){
-                for (int i=col; (i<=range && i<=6); i++){
-                    if (m_board[row][i]->player()->type() == Player::Blue){
+                for (int i=col+1; (i<=range && i<=6); i++){
+                    if (m_board[row][i]->player() != nullptr){
                         if (!(m_board[row][i]->isInverted())){
-                            m_board[6][i] = m_board[row][i];
+                            //m_board[6][i] = m_board[row][i];
+                            m_board[6][i] -> setInverted(false);
                             m_board[6][i]->setPower(m_board[row][i]->m_power1, m_board[row][i]->m_power2);
                             m_board[6][i]->setPlayer(m_board[row][i]->player());
                         }
                         else{
-                            m_board[0][i] = m_board[row][i];
+                            //m_board[0][i] = m_board[row][i];
+                            m_board[0][i] -> setInverted(true);
                             m_board[0][i]->setPower(m_board[row][i]->m_power1, m_board[row][i]->m_power2);
                             m_board[0][i]->setPlayer(m_board[row][i]->player());
                         }
@@ -90,60 +93,85 @@ void Squadro::play(int id) {
                         m_board[row][i] -> setInverted(false);
                         m_board[row][i] -> setPower(0, 0);
 
-                        flag = false;
-                        break;
+                        if ((i+1) < power)
+                            power = (power-i);
+                        else
+                            power += 1;
+                        range = power;
+
                     }
+                }
+            }
+            else{
+                for (int i=col-1; (i>=range && i>=0); i--){
+                    if (m_board[row][i]->player() != nullptr){
+                        if (!(m_board[row][i]->isInverted())){
+                            //m_board[6][i] = m_board[row][i];
+                            m_board[6][i] -> setInverted(false);
+                            m_board[6][i]->setPower(m_board[row][i]->m_power1, m_board[row][i]->m_power2);
+                            m_board[6][i]->setPlayer(m_board[row][i]->player());
+                        }
+                        else{
+                            //m_board[0][i] = m_board[row][i];
+                            m_board[0][i] -> setInverted(true);
+                            m_board[0][i]->setPower(m_board[row][i]->m_power1, m_board[row][i]->m_power2);
+                            m_board[0][i]->setPlayer(m_board[row][i]->player());
+                        }
+
+                        m_board[row][i] -> setPlayer(nullptr);
+                        m_board[row][i] -> setInverted(false);
+                        m_board[row][i] -> setPower(0, 0);
+
+                        if ((i+1) < power)
+                            power = i+1;
+                        else
+                            power += 1;
+                        range = power;
+
+                    }
+                }
+            }
+
+            if (!cell->isInverted()){
+                if ((col+power) < 6){
+                    cell = m_board[row][col+power];
+                }
+                else if ((col+power) >= 6){
+                    cell = m_board[row][6];
+                    cell->setInverted(true);
                 }
             }
 
             else{
-                for (int i=col; (i>=range && i>=0); i--){
-
+                if ((col-power) > 0){
+                    cell = m_board[row][col-power];
+                    cell->setInverted(true);
                 }
-            }
-
-            if (flag){
-                if (!cell->isInverted()){
-                    if ((col+cell->getPower()) < 6){
-                        cell = m_board[row][col+cell->getPower()];
-                    }
-                    else if ((col+cell->getPower()) >= 6){
-                        cell = m_board[row][6];
-                        cell->setInverted(true);
-                    }
-                }
-
-                else{
-                    if ((col-cell->getPower()) > 0){
-                        cell = m_board[row][col-cell->getPower()];
-                        cell->setInverted(true);
-                    }
-                    else if ((col-cell->getPower()) <= 0){
-                        cell = m_board[row][0];
-                        cell->setInverted(true);
-                        cell->setCompleted(true);
-                    }
+                else if ((col-power) <= 0){
+                    cell = m_board[row][0];
+                    cell->setInverted(true);
+                    cell->setCompleted(true);
                 }
             }
         }
 
         else if (m_player->type() == Player::Blue){
             if (!cell->isInverted()){
-                if ((row-cell->getPower()) > 0){
-                    cell = m_board[row-cell->getPower()][col];
+                if ((row-power) > 0){
+                    cell = m_board[row-power][col];
                 }
-                else if ((row-cell->getPower()) <= 0){
+                else if ((row-power) <= 0){
                     cell = m_board[0][col];
                     cell->setInverted(true);
                 }
             }
 
             else{
-                if ((row+cell->getPower()) < 6){
-                    cell = m_board[row+cell->getPower()][col];
+                if ((row+power) < 6){
+                    cell = m_board[row+power][col];
                     cell->setInverted(true);
                 }
-                else if ((row+cell->getPower()) >= 6){
+                else if ((row+power) >= 6){
                     cell = m_board[6][col];
                     cell->setInverted(true);
                     cell->setCompleted(true);
