@@ -69,6 +69,25 @@ void Squadro::play(int id) {
 
     int power = cell->getPower();
 
+    if (!cell->isInverted()){
+                if ((col+power) < 6){
+                    power += col;
+                }
+                else if ((col+power) >= 6){
+                    power = 6;
+                }
+            }
+
+            else{
+                if ((col-power) > 0){
+                    power -= col;
+                }
+                else if ((col-power) <= 0){
+                    power = 0;
+                }
+            }
+    }   
+
     if (cell->player() == m_player && !cell->isCompleted()) {
         if (m_player->type() == Player::Red){
             int range = (col+power);
@@ -132,24 +151,17 @@ void Squadro::play(int id) {
                 }
             }
 
+            cell = m_board[row][power];
             if (!cell->isInverted()){
-                if ((col+power) < 6){
-                    cell = m_board[row][col+power];
-                }
-                else if ((col+power) >= 6){
-                    cell = m_board[row][6];
+                if (power == 6){
                     cell->setInverted(true);
                 }
             }
 
             else{
-                if ((col-power) > 0){
-                    cell = m_board[row][col-power];
-                    cell->setInverted(true);
-                }
-                else if ((col-power) <= 0){
-                    cell = m_board[row][0];
-                    cell->setInverted(true);
+                cell->setInverted(true);
+
+                if (power == 0){
                     cell->setCompleted(true);
                 }
             }
