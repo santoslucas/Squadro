@@ -16,6 +16,8 @@ class Squadro : public QMainWindow {
 public:
     Squadro(QWidget *parent = nullptr);
     virtual ~Squadro();
+    int winnerBlue;
+    int winnerRed;
 
 signals:
     void turnEnded();

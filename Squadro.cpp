@@ -62,12 +62,15 @@ Squadro::~Squadro() {
 }
 
 void Squadro::play(int id) {
+
     int row = id / 7;
     int col = id % 7;
     Cell* cell = m_board[row][col];
     Q_ASSERT(cell != nullptr);
 
+
     int power = cell->getPower();
+    int invertido=0;
 
     if (cell->player() == m_player && !cell->isCompleted()) {
         if (m_player->type() == Player::Red){
@@ -81,17 +84,18 @@ void Squadro::play(int id) {
             }
 
             else{
+                invertido=1;
                 if ((col-power) > 0){
-                    power -= col;
+                    power = col - power;
                 }
                 else if ((col-power) <= 0){
                     power = 0;
                 }
             }
 
-            int range = (col+power);
 
             if (!cell->isInverted()){
+                int range = (power);
                 for (int i=col+1; (i<=range && i<=6); i++){
                     if (m_board[row][i]->player() != nullptr){
                         if (!(m_board[row][i]->isInverted())){
@@ -112,11 +116,14 @@ void Squadro::play(int id) {
                         m_board[row][i] -> setPower(0, 0);
 
                         power = i+1;
-
+                        if(m_board[row][i+1]->player() == nullptr){
+                            break;
+                        }
                     }
                 }
             }
             else{
+                int range = (power);
                 for (int i=col-1; (i>=range && i>=0); i--){
                     if (m_board[row][i]->player() != nullptr){
                         if (!(m_board[row][i]->isInverted())){
@@ -136,13 +143,18 @@ void Squadro::play(int id) {
                         m_board[row][i] -> setInverted(false);
                         m_board[row][i] -> setPower(0, 0);
 
-                        power = i+1;
-
+                        power = i-1;
+                        if(m_board[row][i-1]->player() == nullptr){
+                            break;
+                        }
                     }
                 }
             }
 
             cell = m_board[row][power];
+            if(invertido==1){
+                cell->setInverted(true);
+            }
             if (!cell->isInverted()){
                 if (power == 6){
                     cell->setInverted(true);
@@ -154,6 +166,7 @@ void Squadro::play(int id) {
 
                 if (power == 0){
                     cell->setCompleted(true);
+                    winnerRed++;
                 }
             }
         }
@@ -161,23 +174,97 @@ void Squadro::play(int id) {
         else if (m_player->type() == Player::Blue){
             if (!cell->isInverted()){
                 if ((row-power) > 0){
-                    cell = m_board[row-power][col];
+                        power = row-power;
                 }
                 else if ((row-power) <= 0){
-                    cell = m_board[0][col];
+                        power = 0;
+                }
+            }
+
+            else{
+                invertido=1;
+                if ((row+power) < 6){
+                    power = row + power;
+                }
+                else if ((row+power) >= 6){
+                    power = 6;
+                }
+            }
+
+            if (!cell->isInverted()){
+                int range = (power);
+                for (int i=row-1; (i>=range && i>=0); i--){
+                    if (m_board[i][col]->player() != nullptr){
+                        if (!(m_board[i][col]->isInverted())){
+                            //m_board[6][i] = m_board[row][i];
+                            m_board[i][0] -> setInverted(false);
+                            m_board[i][0]->setPower(m_board[i][col]->m_power1, m_board[i][col]->m_power2);
+                            m_board[i][0]->setPlayer(m_board[i][col]->player());
+                        }
+                        else{
+                            //m_board[0][i] = m_board[row][i];
+                            m_board[i][6] -> setInverted(true);
+                            m_board[i][6]->setPower(m_board[i][col]->m_power1, m_board[i][col]->m_power2);
+                            m_board[i][6]->setPlayer(m_board[i][col]->player());
+                        }
+
+                        m_board[i][col] -> setPlayer(nullptr);
+                        m_board[i][col] -> setInverted(false);
+                        m_board[i][col] -> setPower(0, 0);
+
+                        power = i-1;
+                        if(m_board[i-1][col]->player() == nullptr){
+                            break;
+                        }
+                    }
+                }
+            }
+            else{
+                int range = (power);
+                for (int i=row+1; (i<=range && i<=6); i++){
+                    if (m_board[i][col]->player() != nullptr){
+                        if (!(m_board[i][col]->isInverted())){
+                            //m_board[6][i] = m_board[row][i];
+                            m_board[i][0] -> setInverted(false);
+                            m_board[i][0]->setPower(m_board[i][col]->m_power1, m_board[i][col]->m_power2);
+                            m_board[i][0]->setPlayer(m_board[i][col]->player());
+                        }
+                        else{
+                            //m_board[0][i] = m_board[row][i];
+                            m_board[i][6] -> setInverted(true);
+                            m_board[i][6]->setPower(m_board[i][col]->m_power1, m_board[i][col]->m_power2);
+                            m_board[i][6]->setPlayer(m_board[i][col]->player());
+                        }
+
+                        m_board[i][col] -> setPlayer(nullptr);
+                        m_board[i][col] -> setInverted(false);
+                        m_board[i][col] -> setPower(0, 0);
+
+                        power = i+1;
+                        if(m_board[i+1][col]->player() == nullptr){
+                            break;
+                        }
+                    }
+                }
+            }
+
+            cell = m_board[power][col];
+            if(invertido==1){ //situação especifica onde não entrada no if
+                cell->setInverted(true);
+            }
+
+            if (!cell->isInverted()){
+                if (power == 0){
                     cell->setInverted(true);
                 }
             }
 
             else{
-                if ((row+power) < 6){
-                    cell = m_board[row+power][col];
-                    cell->setInverted(true);
-                }
-                else if ((row+power) >= 6){
-                    cell = m_board[6][col];
-                    cell->setInverted(true);
+                cell->setInverted(true);
+
+                if (power == 6){
                     cell->setCompleted(true);
+                    winnerBlue++;
                 }
             }
         }
@@ -192,6 +279,14 @@ void Squadro::play(int id) {
 
         m_player->incrementCount();
         emit turnEnded();
+        if(winnerBlue==4){
+            QMessageBox::information(this, "Fim de jogo", "O jogador azul venceu!");
+            reset();
+        }
+        if(winnerRed==4){
+            QMessageBox::information(this, "Fim de jogo", "O jogador vermelho venceu!");
+            reset();
+        }
     }
 }
 
@@ -238,6 +333,9 @@ void Squadro::reset() {
     m_board[6][3]->setPower(2, 2);
     m_board[6][4]->setPower(3, 1);
     m_board[6][5]->setPower(1, 3);
+
+    winnerBlue=0;
+    winnerRed=0;
 
     // Set the starting player.
     m_player = red;
