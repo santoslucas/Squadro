@@ -51,6 +51,7 @@ int Cell::getPower(){
 void Cell::reset() {
     m_player = nullptr;
     m_inverted = false;
+    m_completed = false;
 
     this->updateCell();
 }
